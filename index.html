@@ -484,12 +484,12 @@ button {
 
 
 <label>
-    Minggu ke-
+    Pekan ke-
 </label>
 
 <input
     type="number"
-    id="minggu"
+    id="pekan"
     value="1"
     min="1"
 />
@@ -658,8 +658,8 @@ button {
         JURNAL PEKANAN
     </h2>
 
-    <p id="previewMinggu">
-        Minggu ke-1
+    <p id="previewPekan">
+        Pekan ke-1
     </p>
 
 </div>
@@ -1003,9 +1003,9 @@ function updatePreview() {
             "sekolah"
         ).value;
 
-    const minggu =
+    const pekan =
         document.getElementById(
-            "minggu"
+            "pekan"
         ).value;
 
     const periode =
@@ -1044,10 +1044,10 @@ function updatePreview() {
 
 
     document.getElementById(
-        "previewMinggu"
+        "previewPekan"
     ).textContent =
-        "Minggu ke-" +
-        (minggu || "1");
+        "Pekan ke-" +
+        (pekan || "1");
 
 
     document.getElementById(
@@ -1183,9 +1183,9 @@ function getFormData() {
                 "sekolah"
             ).value,
 
-        minggu:
+        pekan:
             document.getElementById(
-                "minggu"
+                "pekan"
             ).value,
 
         periode:
@@ -1348,9 +1348,9 @@ function loadDraft() {
 
 
         document.getElementById(
-            "minggu"
+            "pekan"
         ).value =
-            data.minggu || "1";
+            data.pekan || "1";
 
 
         document.getElementById(
@@ -1501,7 +1501,7 @@ function newJournal() {
 
 
     document.getElementById(
-        "minggu"
+        "pekan"
     ).value = "1";
 
 
@@ -1545,6 +1545,7 @@ function newJournal() {
 async function downloadPNG() {
 
     updatePreview();
+    saveToHistory();
 
 
     if (
@@ -1648,6 +1649,7 @@ async function downloadPNG() {
 async function downloadPDF() {
 
     updatePreview();
+    saveToHistory();
 
 
     if (
@@ -1930,7 +1932,7 @@ function attachMainFormEvents() {
 
     const formInputs =
         document.querySelectorAll(
-            "#nama, #kelas, #sekolah, #minggu, #periode, #catatan"
+            "#nama, #kelas, #sekolah, #pekan, #periode, #catatan"
         );
 
 
@@ -1982,6 +1984,31 @@ function initialize() {
 
 
 initialize();
+
+function saveToHistory() {
+    const data = getFormData();
+    
+    // Jangan simpan kalau nama masih kosong
+    if (!data.nama || data.nama.trim() === "") return;
+
+    const HISTORY_KEY = "balitaPelangi_jurnalHistory";
+    let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+
+    const newEntry = {
+        id: Date.now(),
+        nama: data.nama,
+        kelas: data.kelas,
+        pekan: data.pekan,
+        periode: data.periode || "-",
+        tanggal: new Date().toLocaleDateString("id-ID", {
+            day: 'numeric', month: 'short', year: 'numeric'
+        }),
+        catatan: data.catatan || "-"
+    };
+
+    history.unshift(newEntry);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+}
 
 </script>
 
