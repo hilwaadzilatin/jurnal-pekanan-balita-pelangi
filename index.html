@@ -1,0 +1,1991 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Jurnal Pekanan - Balita Pelangi</title>
+
+
+<!-- html2canvas lokal -->
+<script src="html2canvas.min.js"></script>
+
+
+<!-- jsPDF dari CDN -->
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f3f6f4;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 25px;
+}
+
+.website-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.website-header h1 {
+    margin: 0;
+    color: #47745f;
+    font-size: 28px;
+}
+
+.website-header p {
+    margin-top: 7px;
+    color: #777;
+}
+
+.content {
+    display: grid;
+    grid-template-columns: 390px 1fr;
+    gap: 25px;
+    align-items: start;
+}
+
+.card {
+    background: white;
+    padding: 22px;
+    border-radius: 16px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.07);
+}
+
+.card h2 {
+    color: #47745f;
+    margin-top: 0;
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #d9dedb;
+    border-radius: 9px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #47745f;
+}
+
+textarea {
+    min-height: 75px;
+    resize: vertical;
+}
+
+
+/* DRAFT */
+
+.draft-status {
+    margin-top: 12px;
+    padding: 9px 11px;
+    border-radius: 8px;
+    background: #edf7f0;
+    color: #47745f;
+    font-size: 12px;
+    text-align: center;
+}
+
+.draft-status.saving {
+    background: #fff6df;
+    color: #8b6b20;
+}
+
+.draft-status.empty {
+    background: #f3f3f3;
+    color: #888;
+}
+
+
+/* KEGIATAN */
+
+.activity-row {
+    background: #f8faf9;
+    border: 1px solid #e1e6e3;
+    border-radius: 11px;
+    padding: 12px;
+    margin-top: 12px;
+}
+
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.activity-number {
+    color: #47745f;
+    font-weight: bold;
+}
+
+.delete-row {
+    width: auto;
+    padding: 5px 9px;
+    margin: 0;
+    background: #f7e5e5;
+    color: #a04444;
+    font-size: 12px;
+}
+
+
+/* BUTTON */
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.add-button {
+    background: #edf4ef;
+    color: #47745f;
+}
+
+.download-button {
+    background: #47745f;
+    color: white;
+}
+
+.pdf-button {
+    background: #edf4ef;
+    color: #47745f;
+}
+
+.new-button {
+    background: #f7e5e5;
+    color: #a04444;
+}
+
+
+/* PREVIEW */
+
+.preview-card {
+    overflow: auto;
+}
+
+.journal {
+    width: 794px;
+    min-height: 1123px;
+    background: white;
+    margin: auto;
+    padding: 55px;
+    border: 1px solid #ddd;
+}
+
+
+/* HEADER JURNAL */
+
+.journal-header {
+    text-align: center;
+    border-bottom: 2px solid #47745f;
+    padding-bottom: 15px;
+}
+
+
+/* LOGO */
+
+.logo {
+    width: 75px;
+    height: 75px;
+    object-fit: contain;
+    margin-bottom: 8px;
+}
+
+.logo-placeholder {
+    width: 75px;
+    height: 75px;
+    margin: auto;
+    border-radius: 50%;
+    background: #edf4ef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 35px;
+}
+
+
+/* NAMA LEMBAGA */
+
+.school-name {
+    color: #47745f;
+    font-size: 23px;
+    font-weight: bold;
+}
+
+.school-subtitle {
+    margin-top: 5px;
+    color: #777;
+    font-size: 12px;
+}
+
+
+/* JUDUL */
+
+.journal-title {
+    text-align: center;
+    margin: 25px 0;
+}
+
+.journal-title h2 {
+    margin: 0;
+    color: #47745f;
+    font-size: 21px;
+}
+
+.journal-title p {
+    margin-top: 7px;
+    font-size: 13px;
+}
+
+
+/* INFORMASI */
+
+.student-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 30px;
+    margin-bottom: 25px;
+}
+
+.info-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #ddd;
+    font-size: 13px;
+}
+
+
+/* TABEL */
+
+.journal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.journal-table th,
+.journal-table td {
+    border: 1px solid #777;
+    padding: 9px;
+    vertical-align: top;
+}
+
+.journal-table th {
+    background: #eaf2ed;
+    color: #355c4d;
+    text-align: center;
+}
+
+.journal-table th:first-child {
+    width: 45px;
+}
+
+.journal-table th:nth-child(2) {
+    width: 230px;
+}
+
+.journal-table td:first-child {
+    text-align: center;
+}
+
+
+/* CATATAN */
+
+.note {
+    margin-top: 25px;
+}
+
+.note-title {
+    color: #47745f;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.note-box {
+    min-height: 80px;
+    border: 1px solid #777;
+    padding: 12px;
+    font-size: 12px;
+    white-space: pre-wrap;
+}
+
+
+/* FOOTER */
+
+.footer {
+    margin-top: 50px;
+    text-align: right;
+    font-size: 10px;
+    color: #999;
+}
+
+
+/* RESPONSIVE */
+
+@media(max-width: 850px) {
+
+    .content {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<!-- HEADER WEBSITE -->
+
+<div class="website-header">
+
+    <h1>
+        🌈 Jurnal Pekanan Siswa
+    </h1>
+
+    <p>
+        TK & Daycare Balita Pelangi
+    </p>
+
+</div>
+
+
+
+<div class="content">
+
+
+<!-- =====================================================
+     FORM
+===================================================== -->
+
+<div class="card">
+
+<h2>
+    📝 Data Jurnal
+</h2>
+
+
+<label>
+    Jenis Jurnal
+</label>
+
+<select
+    id="jenisLayanan"
+>
+
+    <option value="TK">
+        TK
+    </option>
+
+    <option value="Daycare">
+        Daycare
+    </option>
+
+</select>
+
+
+<label>
+    Nama Siswa
+</label>
+
+<input
+    type="text"
+    id="nama"
+    placeholder="Nama siswa"
+/>
+
+
+<label>
+    Kelas / Kelompok
+</label>
+
+<select id="kelas">
+
+    <option>
+        Abu Bakar Ash-Shiddiq
+    </option>
+
+    <option>
+        Umar Bin Khattab
+    </option>
+
+    <option>
+        Utsman Bin Affan
+    </option>
+
+    <option>
+        Daycare-KB
+    </option>
+
+    <option>
+        Daycare
+    </option>
+
+</select>
+
+
+<label>
+    Sekolah
+</label>
+
+<select id="sekolah">
+
+    <option value="TK">
+        TK
+    </option>
+
+    <option value="TPA">
+        TPA
+    </option>
+
+</select>
+
+
+<label>
+    Minggu ke-
+</label>
+
+<input
+    type="number"
+    id="minggu"
+    value="1"
+    min="1"
+/>
+
+
+<label>
+    Periode
+</label>
+
+<input
+    type="text"
+    id="periode"
+    placeholder="Contoh: 17–21 Agustus 2026"
+/>
+
+
+<h3
+    style="
+        color:#47745f;
+        margin-top:25px;
+    "
+>
+
+    📚 Kegiatan Pembelajaran
+
+</h3>
+
+
+<div id="activityContainer">
+</div>
+
+
+<button
+    class="add-button"
+    onclick="addActivity()"
+>
+
+    + Tambah Baris
+
+</button>
+
+
+<label>
+    Catatan Guru
+</label>
+
+<textarea
+    id="catatan"
+    placeholder="Tuliskan catatan guru..."
+></textarea>
+
+
+<div
+    class="draft-status empty"
+    id="draftStatus"
+>
+
+    Belum ada draft
+
+</div>
+
+
+<!-- PNG -->
+
+<button
+    class="download-button"
+    onclick="downloadPNG()"
+>
+
+    🖼️ Download Jurnal PNG
+
+</button>
+
+
+<!-- PDF -->
+
+<button
+    class="download-button pdf-button"
+    onclick="downloadPDF()"
+>
+
+    📄 Download Jurnal PDF
+
+</button>
+
+
+<!-- JURNAL BARU -->
+
+<button
+    class="new-button"
+    onclick="newJournal()"
+>
+
+    🗑️ Buat Jurnal Baru
+
+</button>
+
+
+</div>
+
+
+
+<!-- =====================================================
+     PREVIEW
+===================================================== -->
+
+<div class="card preview-card">
+
+<h2>
+    👀 Preview Jurnal
+</h2>
+
+
+<div
+    class="journal"
+    id="journal"
+>
+
+
+<div class="journal-header">
+
+
+<img
+    src="logo.png"
+    class="logo"
+    id="schoolLogo"
+    onerror="showLogoPlaceholder()"
+>
+
+
+<div
+    class="logo-placeholder"
+    id="logoPlaceholder"
+    style="display:none;"
+>
+
+    🌈
+
+</div>
+
+
+<div
+    class="school-name"
+    id="schoolName"
+>
+
+    TK BALITA PELANGI
+
+</div>
+
+
+<div class="school-subtitle">
+
+    Jurnal Pekanan Siswa
+
+</div>
+
+
+</div>
+
+
+
+<div class="journal-title">
+
+    <h2>
+        JURNAL PEKANAN
+    </h2>
+
+    <p id="previewMinggu">
+        Minggu ke-1
+    </p>
+
+</div>
+
+
+
+<div class="student-info">
+
+
+<div class="info-item">
+
+    <b>
+        Nama Siswa:
+    </b>
+
+    <span id="previewNama">
+        -
+    </span>
+
+</div>
+
+
+<div class="info-item">
+
+    <b>
+        Kelas:
+    </b>
+
+    <span id="previewKelas">
+        -
+    </span>
+
+</div>
+
+
+<div class="info-item">
+
+    <b>
+        Periode:
+    </b>
+
+    <span id="previewPeriode">
+        -
+    </span>
+
+</div>
+
+
+<div class="info-item">
+
+    <b>
+        Sekolah:
+    </b>
+
+    <span id="previewSekolah">
+        TK
+    </span>
+
+</div>
+
+
+</div>
+
+
+
+<table class="journal-table">
+
+<thead>
+
+<tr>
+
+<th>
+    No
+</th>
+
+<th>
+    Elemen
+</th>
+
+<th>
+    Kegiatan
+</th>
+
+</tr>
+
+</thead>
+
+
+<tbody
+    id="previewRows"
+>
+</tbody>
+
+
+</table>
+
+
+
+<div class="note">
+
+<div class="note-title">
+
+    Catatan Guru
+
+</div>
+
+
+<div
+    class="note-box"
+    id="previewCatatan"
+>
+
+    -
+
+</div>
+
+
+</div>
+
+
+
+<div class="footer">
+
+    Jurnal Pekanan · Balita Pelangi
+
+</div>
+
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<script>
+
+/* =====================================================
+   KONSTANTA
+===================================================== */
+
+const DRAFT_KEY =
+    "balitaPelangi_jurnalDraft";
+
+
+const defaultElements = [
+
+    "Nilai Agama dan Budi Pekerti",
+
+    "Jati Diri",
+
+    "Dasar-dasar Literasi dan STEAM (Sains, Teknologi, Rekayasa, Seni, dan Matematika)"
+
+];
+
+
+let activityNumber = 0;
+
+let saveTimer = null;
+
+
+/* =====================================================
+   TAMBAH BARIS
+===================================================== */
+
+function addActivity(
+    element = "",
+    activity = "",
+    shouldSave = true
+) {
+
+    activityNumber++;
+
+    const container =
+        document.getElementById(
+            "activityContainer"
+        );
+
+    const row =
+        document.createElement(
+            "div"
+        );
+
+    row.className =
+        "activity-row";
+
+    row.innerHTML = `
+
+        <div class="activity-header">
+
+            <div class="activity-number">
+
+                No. ${activityNumber}
+
+            </div>
+
+            <button
+                type="button"
+                class="delete-row"
+                onclick="deleteActivity(this)"
+            >
+
+                Hapus
+
+            </button>
+
+        </div>
+
+
+        <label>
+            Elemen
+        </label>
+
+
+        <input
+            class="element-input"
+            type="text"
+            value="${escapeHTML(element)}"
+            placeholder="Masukkan elemen..."
+        >
+
+
+        <label>
+            Kegiatan
+        </label>
+
+
+        <textarea
+            class="activity-input"
+            placeholder="Tuliskan kegiatan..."
+        >${escapeHTML(activity)}</textarea>
+
+    `;
+
+    container.appendChild(row);
+
+    attachDraftEvents(row);
+
+    if (shouldSave) {
+        saveDraft();
+    }
+
+    updatePreview();
+
+}
+
+
+/* =====================================================
+   EVENT BARIS
+===================================================== */
+
+function attachDraftEvents(row) {
+
+    const inputs =
+        row.querySelectorAll(
+            "input, textarea"
+        );
+
+    inputs.forEach(
+        input => {
+
+            input.addEventListener(
+                "input",
+                handleFormChange
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   HAPUS BARIS
+===================================================== */
+
+function deleteActivity(button) {
+
+    button
+        .closest(".activity-row")
+        .remove();
+
+    renumberActivities();
+
+    saveDraft();
+
+    updatePreview();
+
+}
+
+
+/* =====================================================
+   RENUMBER
+===================================================== */
+
+function renumberActivities() {
+
+    const rows =
+        document.querySelectorAll(
+            ".activity-row"
+        );
+
+    rows.forEach(
+        (row, index) => {
+
+            row.querySelector(
+                ".activity-number"
+            ).textContent =
+                "No. " + (index + 1);
+
+        }
+    );
+
+    activityNumber =
+        rows.length;
+
+}
+
+
+/* =====================================================
+   UPDATE PREVIEW
+===================================================== */
+
+function updatePreview() {
+
+    const nama =
+        document.getElementById(
+            "nama"
+        ).value.trim();
+
+    const kelas =
+        document.getElementById(
+            "kelas"
+        ).value;
+
+    const sekolah =
+        document.getElementById(
+            "sekolah"
+        ).value;
+
+    const minggu =
+        document.getElementById(
+            "minggu"
+        ).value;
+
+    const periode =
+        document.getElementById(
+            "periode"
+        ).value.trim();
+
+    const catatan =
+        document.getElementById(
+            "catatan"
+        ).value;
+
+
+    document.getElementById(
+        "previewNama"
+    ).textContent =
+        nama || "-";
+
+
+    document.getElementById(
+        "previewKelas"
+    ).textContent =
+        kelas;
+
+
+    document.getElementById(
+        "previewSekolah"
+    ).textContent =
+        sekolah;
+
+
+    document.getElementById(
+        "previewPeriode"
+    ).textContent =
+        periode || "-";
+
+
+    document.getElementById(
+        "previewMinggu"
+    ).textContent =
+        "Minggu ke-" +
+        (minggu || "1");
+
+
+    document.getElementById(
+        "previewCatatan"
+    ).textContent =
+        catatan || "-";
+
+
+    const jenis =
+        document.getElementById(
+            "jenisLayanan"
+        ).value;
+
+
+    document.getElementById(
+        "schoolName"
+    ).textContent =
+        jenis === "TK"
+        ? "TK BALITA PELANGI"
+        : "DAYCARE BALITA PELANGI";
+
+
+    const elements =
+        document.querySelectorAll(
+            ".element-input"
+        );
+
+    const activities =
+        document.querySelectorAll(
+            ".activity-input"
+        );
+
+    const preview =
+        document.getElementById(
+            "previewRows"
+        );
+
+
+    preview.innerHTML = "";
+
+
+    elements.forEach(
+        (element, index) => {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+            row.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        element.value || "-"
+                    )}
+                </td>
+
+                <td>
+                    ${escapeHTML(
+                        activities[index].value || "-"
+                    )}
+                </td>
+
+            `;
+
+            preview.appendChild(row);
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   AMBIL DATA
+===================================================== */
+
+function getFormData() {
+
+    const elements =
+        document.querySelectorAll(
+            ".element-input"
+        );
+
+    const activities =
+        document.querySelectorAll(
+            ".activity-input"
+        );
+
+    const activityData = [];
+
+
+    elements.forEach(
+        (element, index) => {
+
+            activityData.push({
+
+                element:
+                    element.value,
+
+                activity:
+                    activities[index].value
+
+            });
+
+        }
+    );
+
+
+    return {
+
+        nama:
+            document.getElementById(
+                "nama"
+            ).value,
+
+        jenis:
+            document.getElementById(
+                "jenisLayanan"
+            ).value,
+
+        kelas:
+            document.getElementById(
+                "kelas"
+            ).value,
+
+        sekolah:
+            document.getElementById(
+                "sekolah"
+            ).value,
+
+        minggu:
+            document.getElementById(
+                "minggu"
+            ).value,
+
+        periode:
+            document.getElementById(
+                "periode"
+            ).value,
+
+        catatan:
+            document.getElementById(
+                "catatan"
+            ).value,
+
+        activities:
+            activityData
+
+    };
+
+}
+
+
+/* =====================================================
+   EVENT FORM
+===================================================== */
+
+function handleFormChange() {
+
+    updatePreview();
+
+    clearTimeout(
+        saveTimer
+    );
+
+    setDraftStatus(
+        "saving",
+        "💾 Menyimpan draft..."
+    );
+
+    saveTimer =
+        setTimeout(
+            saveDraft,
+            400
+        );
+
+}
+
+
+/* =====================================================
+   SAVE DRAFT
+===================================================== */
+
+function saveDraft() {
+
+    const data =
+        getFormData();
+
+    try {
+
+        localStorage.setItem(
+            DRAFT_KEY,
+            JSON.stringify(data)
+        );
+
+        setDraftStatus(
+            "saved",
+            "🟢 Draft tersimpan otomatis"
+        );
+
+    }
+
+    catch(error) {
+
+        console.error(error);
+
+        setDraftStatus(
+            "empty",
+            "Draft tidak dapat disimpan"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   STATUS
+===================================================== */
+
+function setDraftStatus(
+    type,
+    text
+) {
+
+    const status =
+        document.getElementById(
+            "draftStatus"
+        );
+
+    status.className =
+        "draft-status " + type;
+
+    status.textContent =
+        text;
+
+}
+
+
+/* =====================================================
+   LOAD DRAFT
+===================================================== */
+
+function loadDraft() {
+
+    const saved =
+        localStorage.getItem(
+            DRAFT_KEY
+        );
+
+
+    if (!saved) {
+
+        setDraftStatus(
+            "empty",
+            "Belum ada draft"
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        const data =
+            JSON.parse(saved);
+
+
+        document.getElementById(
+            "nama"
+        ).value =
+            data.nama || "";
+
+
+        document.getElementById(
+            "jenisLayanan"
+        ).value =
+            data.jenis || "TK";
+
+
+        document.getElementById(
+            "kelas"
+        ).value =
+            data.kelas ||
+            "Abu Bakar Ash-Shiddiq";
+
+
+        document.getElementById(
+            "sekolah"
+        ).value =
+            data.sekolah || "TK";
+
+
+        document.getElementById(
+            "minggu"
+        ).value =
+            data.minggu || "1";
+
+
+        document.getElementById(
+            "periode"
+        ).value =
+            data.periode || "";
+
+
+        document.getElementById(
+            "catatan"
+        ).value =
+            data.catatan || "";
+
+
+        document.getElementById(
+            "activityContainer"
+        ).innerHTML =
+            "";
+
+
+        activityNumber =
+            0;
+
+
+        if (
+            Array.isArray(data.activities)
+            &&
+            data.activities.length > 0
+        ) {
+
+            data.activities.forEach(
+                item => {
+
+                    addActivity(
+                        item.element || "",
+                        item.activity || "",
+                        false
+                    );
+
+                }
+            );
+
+        }
+
+        else {
+
+            createDefaultElements();
+
+        }
+
+
+        updatePreview();
+
+
+        setDraftStatus(
+            "saved",
+            "🟢 Draft tersimpan otomatis"
+        );
+
+    }
+
+    catch(error) {
+
+        console.error(error);
+
+        createDefaultElements();
+
+    }
+
+}
+
+
+/* =====================================================
+   DEFAULT ELEMENTS
+===================================================== */
+
+function createDefaultElements() {
+
+    document.getElementById(
+        "activityContainer"
+    ).innerHTML = "";
+
+
+    activityNumber = 0;
+
+
+    defaultElements.forEach(
+        element => {
+
+            addActivity(
+                element,
+                "",
+                false
+            );
+
+        }
+    );
+
+
+    updatePreview();
+
+}
+
+
+/* =====================================================
+   JURNAL BARU
+===================================================== */
+
+function newJournal() {
+
+    const confirmed =
+        confirm(
+            "Yakin ingin membuat jurnal baru?\n\n" +
+            "Semua isi jurnal akan dihapus, " +
+            "tetapi template elemen tetap dipertahankan."
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    localStorage.removeItem(
+        DRAFT_KEY
+    );
+
+
+    document.getElementById(
+        "nama"
+    ).value = "";
+
+
+    document.getElementById(
+        "jenisLayanan"
+    ).value = "TK";
+
+
+    document.getElementById(
+        "kelas"
+    ).value =
+        "Abu Bakar Ash-Shiddiq";
+
+
+    document.getElementById(
+        "sekolah"
+    ).value = "TK";
+
+
+    document.getElementById(
+        "minggu"
+    ).value = "1";
+
+
+    document.getElementById(
+        "periode"
+    ).value = "";
+
+
+    document.getElementById(
+        "catatan"
+    ).value = "";
+
+
+    createDefaultElements();
+
+
+    saveDraft();
+
+
+    updatePreview();
+
+
+    setDraftStatus(
+        "saved",
+        "🟢 Jurnal baru siap diisi"
+    );
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+/* =====================================================
+   DOWNLOAD PNG
+===================================================== */
+
+async function downloadPNG() {
+
+    updatePreview();
+
+
+    if (
+        typeof html2canvas ===
+        "undefined"
+    ) {
+
+        alert(
+            "html2canvas belum berhasil dimuat."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        saveDraft();
+
+
+        const journal =
+            document.getElementById(
+                "journal"
+            );
+
+
+        const canvas =
+            await html2canvas(
+                journal,
+                {
+                    scale: 2,
+                    backgroundColor: "#ffffff",
+                    useCORS: true
+                }
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        const nama =
+            getSafeFileName();
+
+
+        link.download =
+            "Jurnal_Pekanan_" +
+            nama +
+            ".png";
+
+
+        link.href =
+            canvas.toDataURL(
+                "image/png"
+            );
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        document.body.removeChild(
+            link
+        );
+
+
+        setDraftStatus(
+            "saved",
+            "🟢 Jurnal tersimpan & PNG berhasil dibuat"
+        );
+
+    }
+
+    catch(error) {
+
+        console.error(error);
+
+        saveDraft();
+
+        alert(
+            "Draft sudah tersimpan, " +
+            "tetapi PNG belum berhasil dibuat."
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   DOWNLOAD PDF
+===================================================== */
+
+async function downloadPDF() {
+
+    updatePreview();
+
+
+    if (
+        typeof html2canvas ===
+        "undefined"
+    ) {
+
+        alert(
+            "html2canvas belum berhasil dimuat."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !window.jspdf ||
+        !window.jspdf.jsPDF
+    ) {
+
+        alert(
+            "Library PDF belum berhasil dimuat.\n\n" +
+            "Pastikan laptop/HP terhubung ke internet."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        saveDraft();
+
+
+        const journal =
+            document.getElementById(
+                "journal"
+            );
+
+
+        const canvas =
+            await html2canvas(
+                journal,
+                {
+                    scale: 2,
+                    backgroundColor: "#ffffff",
+                    useCORS: true
+                }
+            );
+
+
+        const imgData =
+            canvas.toDataURL(
+                "image/jpeg",
+                0.92
+            );
+
+
+        const jsPDF =
+            window.jspdf.jsPDF;
+
+
+        const pdf =
+            new jsPDF({
+                orientation: "portrait",
+                unit: "mm",
+                format: "a4",
+                compress: true
+            });
+
+
+        const pageWidth =
+            pdf.internal.pageSize.getWidth();
+
+
+        const pageHeight =
+            pdf.internal.pageSize.getHeight();
+
+
+        const margin = 8;
+
+
+        const availableWidth =
+            pageWidth -
+            (margin * 2);
+
+
+        const imageWidth =
+            availableWidth;
+
+
+        const imageHeight =
+            canvas.height *
+            imageWidth /
+            canvas.width;
+
+
+        /*
+            Kalau jurnal melebihi
+            satu halaman A4, otomatis
+            dibagi menjadi beberapa halaman.
+        */
+
+        let heightLeft =
+            imageHeight;
+
+
+        let position =
+            margin;
+
+
+        pdf.addImage(
+            imgData,
+            "JPEG",
+            margin,
+            position,
+            imageWidth,
+            imageHeight
+        );
+
+
+        heightLeft -=
+            pageHeight -
+            margin * 2;
+
+
+        while (
+            heightLeft > 0
+        ) {
+
+            position =
+                margin -
+                (
+                    imageHeight -
+                    heightLeft
+                );
+
+
+            pdf.addPage();
+
+
+            pdf.addImage(
+                imgData,
+                "JPEG",
+                margin,
+                position,
+                imageWidth,
+                imageHeight
+            );
+
+
+            heightLeft -=
+                pageHeight -
+                margin * 2;
+
+        }
+
+
+        pdf.save(
+            "Jurnal_Pekanan_" +
+            getSafeFileName() +
+            ".pdf"
+        );
+
+
+        setDraftStatus(
+            "saved",
+            "🟢 Jurnal tersimpan & PDF berhasil dibuat"
+        );
+
+    }
+
+    catch(error) {
+
+        console.error(error);
+
+        saveDraft();
+
+        alert(
+            "Draft sudah tersimpan, " +
+            "tetapi PDF belum berhasil dibuat."
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   NAMA FILE
+===================================================== */
+
+function getSafeFileName() {
+
+    const nama =
+        document.getElementById(
+            "nama"
+        ).value.trim();
+
+
+    return (
+        nama ||
+        "Siswa"
+    )
+    .replace(
+        /[^a-zA-Z0-9À-ÿ\s_-]/g,
+        ""
+    )
+    .replace(
+        /\s+/g,
+        "_"
+    );
+
+}
+
+
+/* =====================================================
+   LOGO ERROR
+===================================================== */
+
+function showLogoPlaceholder() {
+
+    document.getElementById(
+        "schoolLogo"
+    ).style.display =
+        "none";
+
+
+    document.getElementById(
+        "logoPlaceholder"
+    ).style.display =
+        "flex";
+
+}
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHTML(text) {
+
+    return String(text)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =====================================================
+   EVENT FORM UTAMA
+===================================================== */
+
+function attachMainFormEvents() {
+
+    const formInputs =
+        document.querySelectorAll(
+            "#nama, #kelas, #sekolah, #minggu, #periode, #catatan"
+        );
+
+
+    formInputs.forEach(
+        input => {
+
+            input.addEventListener(
+                "input",
+                handleFormChange
+            );
+
+
+            input.addEventListener(
+                "change",
+                handleFormChange
+            );
+
+        }
+    );
+
+
+    document
+        .getElementById(
+            "jenisLayanan"
+        )
+        .addEventListener(
+            "change",
+            handleFormChange
+        );
+
+}
+
+
+/* =====================================================
+   INIT
+===================================================== */
+
+function initialize() {
+
+    createDefaultElements();
+
+    attachMainFormEvents();
+
+    loadDraft();
+
+    updatePreview();
+
+}
+
+
+initialize();
+
+</script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>Admin - Jurnal Pekanan Balita Pelangi</title>
+
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+
+    margin: 0;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background: #f3f6f4;
+
+    color: #333;
+
+}
+
+
+.container {
+
+    max-width: 1100px;
+
+    margin: auto;
+
+    padding: 30px 20px;
+
+}
+
+
+.header {
+
+    text-align: center;
+
+    margin-bottom: 25px;
+
+}
+
+
+.header h1 {
+
+    margin: 0;
+
+    color: #47745f;
+
+}
+
+
+.header p {
+
+    color: #777;
+
+}
+
+
+.card {
+
+    background: white;
+
+    border-radius: 16px;
+
+    padding: 25px;
+
+    box-shadow:
+        0 4px 18px
+        rgba(0,0,0,0.07);
+
+}
+
+
+.login {
+
+    max-width: 400px;
+
+    margin: 80px auto;
+
+}
+
+
+.logo {
+
+    width: 75px;
+
+    height: 75px;
+
+    object-fit: contain;
+
+    display: block;
+
+    margin: 0 auto 10px;
+
+}
+
+
+h2 {
+
+    color: #47745f;
+
+}
+
+
+label {
+
+    display: block;
+
+    font-weight: bold;
+
+    margin-top: 15px;
+
+    margin-bottom: 6px;
+
+}
+
+
+input,
+select {
+
+    width: 100%;
+
+    padding: 11px;
+
+    border: 1px solid #d9dedb;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+
+}
+
+
+button {
+
+    border: none;
+
+    border-radius: 9px;
+
+    padding: 11px 16px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+
+}
+
+
+.login-button {
+
+    width: 100%;
+
+    margin-top: 18px;
+
+    background: #47745f;
+
+    color: white;
+
+}
+
+
+.error {
+
+    color: #a04444;
+
+    background: #f9e8e8;
+
+    padding: 10px;
+
+    border-radius: 8px;
+
+    margin-top: 12px;
+
+    display: none;
+
+}
+
+
+.top-bar {
+
+    display: flex;
+
+    gap: 12px;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 20px;
+
+    flex-wrap: wrap;
+
+}
+
+
+.search {
+
+    flex: 1;
+
+    min-width: 220px;
+
+}
+
+
+.logout {
+
+    background: #f7e5e5;
+
+    color: #a04444;
+
+}
+
+
+.empty {
+
+    text-align: center;
+
+    padding: 50px 20px;
+
+    color: #888;
+
+}
+
+
+.history-item {
+
+    border: 1px solid #e0e5e2;
+
+    border-radius: 12px;
+
+    padding: 16px;
+
+    margin-bottom: 12px;
+
+}
+
+
+.history-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+}
+
+
+.student-name {
+
+    font-weight: bold;
+
+    color: #47745f;
+
+    font-size: 17px;
+
+}
+
+
+.meta {
+
+    margin-top: 7px;
+
+    font-size: 13px;
+
+    color: #666;
+
+}
+
+
+.actions {
+
+    margin-top: 12px;
+
+    display: flex;
+
+    gap: 8px;
+
+}
+
+
+.view {
+
+    background: #edf4ef;
+
+    color: #47745f;
+
+}
+
+
+.delete {
+
+    background: #f7e5e5;
+
+    color: #a04444;
+
+}
+
+
+.detail {
+
+    margin-top: 15px;
+
+    padding: 15px;
+
+    background: #f8faf9;
+
+    border-radius: 10px;
+
+    display: none;
+
+}
+
+
+.detail table {
+
+    width: 100%;
+
+    border-collapse: collapse;
+
+    font-size: 13px;
+
+}
+
+
+.detail th,
+.detail td {
+
+    border: 1px solid #ccc;
+
+    padding: 8px;
+
+    vertical-align: top;
+
+}
+
+
+.detail th {
+
+    background: #eaf2ed;
+
+}
+
+
+@media(max-width:600px) {
+
+    .container {
+
+        padding: 20px 12px;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     LOGIN
+===================================================== -->
+
+<div
+    class="container"
+    id="loginPage"
+>
+
+<div class="card login">
+
+
+<img
+    src="logo.png"
+    class="logo"
+>
+
+
+<h2 style="text-align:center;">
+
+    🔐 Admin Jurnal
+
+</h2>
+
+
+<p
+    style="
+        text-align:center;
+        color:#777;
+        font-size:13px;
+    "
+>
+
+    Balita Pelangi
+
+</p>
+
+
+<label>
+
+    Password Admin
+
+</label>
+
+
+<div style="display:flex; gap:8px; align-items:center;">
+
+    <input
+        type="password"
+        id="password"
+        placeholder="Masukkan password"
+        style="flex:1;"
+    >
+
+    <button
+        type="button"
+        onclick="togglePassword()"
+        style="
+            width:auto;
+            margin:0;
+            padding:11px 13px;
+            background:#edf4ef;
+            color:#47745f;
+        "
+        id="togglePasswordButton"
+    >
+        👁️
+    </button>
+
+</div>
+
+
+<div
+    class="error"
+    id="loginError"
+>
+
+    Password salah.
+
+</div>
+
+
+<button
+    class="login-button"
+    onclick="login()"
+>
+
+    Masuk
+
+</button>
+
+
+</div>
+
+</div>
+
+
+
+<!-- =====================================================
+     ADMIN PAGE
+===================================================== -->
+
+<div
+    class="container"
+    id="adminPage"
+    style="display:none;"
+>
+
+
+<div class="header">
+
+<h1>
+
+    🌈 Admin Jurnal Pekanan
+
+</h1>
+
+
+<p>
+
+    Balita Pelangi
+
+</p>
+
+</div>
+
+
+
+<div class="card">
+
+
+<div class="top-bar">
+
+
+<input
+    class="search"
+    type="text"
+    id="search"
+    placeholder="🔎 Cari nama siswa..."
+    oninput="renderHistory()"
+/>
+
+
+<button
+    class="logout"
+    onclick="logout()"
+>
+
+    Keluar
+
+</button>
+
+
+</div>
+
+
+
+<div id="historyContainer">
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+<script>
+
+/* =====================================================
+   PASSWORD SEMENTARA
+=====================================================
+
+   INI HANYA UNTUK PROTOTYPE LOKAL.
+
+   Nanti ketika website online,
+   password tidak boleh disimpan
+   seperti ini.
+===================================================== */
+
+const ADMIN_PASSWORD =
+    "balitapelangi123";
+
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+function login() {
+
+
+    const password =
+        document.getElementById(
+            "password"
+        ).value;
+
+
+    if (
+        password ===
+        ADMIN_PASSWORD
+    ) {
+
+
+        sessionStorage.setItem(
+            "adminLogin",
+            "true"
+        );
+
+
+        document.getElementById(
+            "loginPage"
+        ).style.display =
+            "none";
+
+
+        document.getElementById(
+            "adminPage"
+        ).style.display =
+            "block";
+
+
+        renderHistory();
+
+    }
+
+    else {
+
+
+        document.getElementById(
+            "loginError"
+        ).style.display =
+            "block";
+
+    }
+
+}
+
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+function logout() {
+
+
+    sessionStorage.removeItem(
+        "adminLogin"
+    );
+
+
+    location.reload();
+
+}
+
+
+
+/* =====================================================
+   DATA CONTOH
+=====================================================
+
+   Untuk sementara kita tampilkan
+   data contoh agar tampilan Admin
+   bisa dites.
+
+   NANTI DATA INI DIGANTI DATABASE.
+===================================================== */
+
+const sampleData = [
+
+    {
+
+        nama:
+            "Contoh Aisyah",
+
+        jenis:
+            "TK",
+
+        kelas:
+            "Abu Bakar Ash-Shiddiq",
+
+        sekolah:
+            "TK",
+
+        pekan:
+            "1",
+
+        periode:
+            "17–21 Agustus 2026",
+
+        activities: [
+
+            {
+
+                element:
+                    "Nilai Agama dan Budi Pekerti",
+
+                activity:
+                    "Berdoa sebelum dan sesudah kegiatan."
+
+            },
+
+            {
+
+                element:
+                    "Jati Diri",
+
+                activity:
+                    "Mengenal anggota tubuh."
+
+            },
+
+            {
+
+                element:
+                    "Dasar-dasar Literasi dan STEAM",
+
+                activity:
+                    "Mengenal bentuk dan warna."
+
+            }
+
+        ],
+
+        catatan:
+            "Ananda mengikuti kegiatan dengan baik."
+
+    }
+
+];
+
+
+
+/* =====================================================
+   RENDER HISTORY
+===================================================== */
+
+function renderHistory() {
+
+
+    const container =
+        document.getElementById(
+            "historyContainer"
+        );
+
+
+    const search =
+        document.getElementById(
+            "search"
+        ).value
+        .toLowerCase()
+        .trim();
+
+
+
+    const filtered =
+        sampleData.filter(
+            item =>
+                item.nama
+                    .toLowerCase()
+                    .includes(search)
+        );
+
+
+
+    if (
+        filtered.length === 0
+    ) {
+
+
+        container.innerHTML = `
+
+            <div class="empty">
+
+                Belum ada riwayat jurnal.
+
+            </div>
+
+        `;
+
+
+        return;
+
+    }
+
+
+
+    container.innerHTML =
+        "";
+
+
+
+    filtered.forEach(
+        (item, index) => {
+
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "history-item";
+
+
+            div.innerHTML = `
+
+                <div class="history-header">
+
+                    <div>
+
+                        <div class="student-name">
+
+                            ${escapeHTML(item.nama)}
+
+                        </div>
+
+                        <div class="meta">
+
+                            ${escapeHTML(item.jenis)}
+                            ·
+                            ${escapeHTML(item.kelas)}
+                            ·
+                            ${escapeHTML(item.sekolah)}
+                            ·
+                            Pekan ${escapeHTML(item.pekan)}
+                            ·
+                            ${escapeHTML(item.periode)}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="actions">
+
+                    <button
+                        class="view"
+                        onclick="toggleDetail(${index})"
+                    >
+
+                        👀 Lihat
+
+                    </button>
+
+
+                    <button
+                        class="delete"
+                        onclick="deleteHistory(${index})"
+                    >
+
+                        🗑️ Hapus
+
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="detail"
+                    id="detail-${index}"
+                >
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    No
+                                </th>
+
+                                <th>
+                                    Elemen
+                                </th>
+
+                                <th>
+                                    Kegiatan
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            ${item.activities
+                                .map(
+                                    (activity, i) => `
+
+                                    <tr>
+
+                                        <td>
+                                            ${i + 1}
+                                        </td>
+
+                                        <td>
+                                            ${escapeHTML(activity.element)}
+                                        </td>
+
+                                        <td>
+                                            ${escapeHTML(activity.activity)}
+                                        </td>
+
+                                    </tr>
+
+                                `
+                                )
+                                .join("")}
+
+                        </tbody>
+
+                    </table>
+
+
+                    <p>
+
+                        <b>
+                            Catatan:
+                        </b>
+
+                        ${escapeHTML(item.catatan || "-")}
+
+                    </p>
+
+                </div>
+
+            `;
+
+
+            container.appendChild(
+                div
+            );
+
+        }
+    );
+
+}
+
+
+
+/* =====================================================
+   DETAIL
+===================================================== */
+
+function toggleDetail(index) {
+
+
+    const detail =
+        document.getElementById(
+            "detail-" + index
+        );
+
+
+    if (
+        detail.style.display ===
+        "block"
+    ) {
+
+        detail.style.display =
+            "none";
+
+    }
+
+    else {
+
+        detail.style.display =
+            "block";
+
+    }
+
+}
+
+
+
+/* =====================================================
+   DELETE
+===================================================== */
+
+function deleteHistory(index) {
+
+
+    const confirmed =
+        confirm(
+            "Yakin ingin menghapus jurnal ini?"
+        );
+
+
+    if (!confirmed) {
+
+        return;
+
+    }
+
+
+    /*
+        DATA CONTOH SAJA.
+
+        Nanti fungsi ini akan
+        menghapus data dari database.
+    */
+
+    sampleData.splice(
+        index,
+        1
+    );
+
+
+    renderHistory();
+
+}
+
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHTML(text) {
+
+
+    return String(text)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+
+/* =====================================================
+   CEK LOGIN
+===================================================== */
+
+if (
+    sessionStorage.getItem(
+        "adminLogin"
+    ) === "true"
+) {
+
+
+    document.getElementById(
+        "loginPage"
+    ).style.display =
+        "none";
+
+
+    document.getElementById(
+        "adminPage"
+    ).style.display =
+        "block";
+
+
+    renderHistory();
+
+}
+
+function togglePassword() {
+
+    const password =
+        document.getElementById("password");
+
+    const button =
+        document.getElementById("togglePasswordButton");
+
+    if (password.type === "password") {
+
+        password.type = "text";
+
+        button.textContent = "🙈";
+
+    } else {
+
+        password.type = "password";
+
+        button.textContent = "👁️";
+
+    }
+
+}
+
+</script>
+
+
+</body>
+
+</html>
