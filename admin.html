@@ -509,6 +509,9 @@ button {
 
 <div class="top-bar">
 
+<button onclick="exportToCSV()" style="background:#e6f4ea; color:#137333; border:none; padding:11px 16px; border-radius:9px; cursor:pointer; font-weight:bold;">
+    📊 Export Excel
+</button>
 
 <input
     class="search"
@@ -543,549 +546,204 @@ button {
 
 </div>
 
-
-
 <script>
+function exportToCSV() {
+    const historyData = JSON.parse(localStorage.getItem("balitaPelangi_jurnalHistory") || "[]");
 
-/* =====================================================
-   PASSWORD SEMENTARA
-=====================================================
-
-   INI HANYA UNTUK PROTOTYPE LOKAL.
-
-   Nanti ketika website online,
-   password tidak boleh disimpan
-   seperti ini.
-===================================================== */
-
-const ADMIN_PASSWORD =
-    "balitapelangi123";
-
-
-
-/* =====================================================
-   LOGIN
-===================================================== */
-
-function login() {
-
-
-    const password =
-        document.getElementById(
-            "password"
-        ).value;
-
-
-    if (
-        password ===
-        ADMIN_PASSWORD
-    ) {
-
-
-        sessionStorage.setItem(
-            "adminLogin",
-            "true"
-        );
-
-
-        document.getElementById(
-            "loginPage"
-        ).style.display =
-            "none";
-
-
-        document.getElementById(
-            "adminPage"
-        ).style.display =
-            "block";
-
-
-        renderHistory();
-
+    if (historyData.length === 0) {
+        alert("Belum ada data riwayat untuk diexport!");
+        return;
     }
 
-    else {
+    // Header Kolom CSV
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "No,Nama Siswa,Kelas,Pekan,Periode,Tanggal Unduh,Catatan Guru\n";
 
+    // Isi Baris Data
+    historyData.forEach((item, index) => {
+        const row = [
+            index + 1,
+            `"${(item.nama || '').replace(/"/g, '""')}"`,
+            `"${(item.kelas || '').replace(/"/g, '""')}"`,
+            `"${item.pekan || '-'}"`,
+            `"${(item.periode || '').replace(/"/g, '""')}"`,
+            `"${item.tanggal || '-'}"`,
+            `"${(item.catatan || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`
+        ];
+        csvContent += row.join(",") + "\n";
+    });
 
-        document.getElementById(
-            "loginError"
-        ).style.display =
-            "block";
-
-    }
-
+    // Buat link download otomatis
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Rekap_Jurnal_BalitaPelangi_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
-
+/* =====================================================
+   PASSWORD ADMIN
+===================================================== */
+const ADMIN_PASSWORD = "bapel123";
 
 /* =====================================================
-   LOGOUT
+   LOGIN & LOGOUT
 ===================================================== */
+function login() {
+    const password = document.getElementById("password").value;
+
+    if (password === ADMIN_PASSWORD) {
+        sessionStorage.setItem("adminLogin", "true");
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("adminPage").style.display = "block";
+        renderHistory();
+    } else {
+        document.getElementById("loginError").style.display = "block";
+    }
+}
 
 function logout() {
-
-
-    sessionStorage.removeItem(
-        "adminLogin"
-    );
-
-
+    sessionStorage.removeItem("adminLogin");
     location.reload();
-
 }
 
+function togglePassword() {
+    const password = document.getElementById("password");
+    const button = document.getElementById("togglePasswordButton");
 
+    if (password.type === "password") {
+        password.type = "text";
+        button.textContent = "🙈";
+    } else {
+        password.type = "password";
+        button.textContent = "👁️";
+    }
+}
 
 /* =====================================================
-   DATA CONTOH
-=====================================================
-
-   Untuk sementara kita tampilkan
-   data contoh agar tampilan Admin
-   bisa dites.
-
-   NANTI DATA INI DIGANTI DATABASE.
+   RENDER HISTORY (MEMBACA DARI LOCALSTORAGE)
 ===================================================== */
+function renderHistory() {
+    const container = document.getElementById("historyContainer");
+    const search = document.getElementById("search").value.toLowerCase().trim();
 
-const sampleData = [
+    // 🔴 BACA DATA ASLI DARI LOCALSTORAGE
+    const HISTORY_KEY = "balitaPelangi_jurnalHistory";
+    const historyData = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
 
-    {
+    // Filter berdasarkan pencarian nama
+    const filtered = historyData.filter(item =>
+        (item.nama || "").toLowerCase().includes(search)
+    );
 
-        nama:
-            "Contoh Aisyah",
-
-        jenis:
-            "TK",
-
-        kelas:
-            "Abu Bakar Ash-Shiddiq",
-
-        sekolah:
-            "TK",
-
-        pekan:
-            "1",
-
-        periode:
-            "17–21 Agustus 2026",
-
-        activities: [
-
-            {
-
-                element:
-                    "Nilai Agama dan Budi Pekerti",
-
-                activity:
-                    "Berdoa sebelum dan sesudah kegiatan."
-
-            },
-
-            {
-
-                element:
-                    "Jati Diri",
-
-                activity:
-                    "Mengenal anggota tubuh."
-
-            },
-
-            {
-
-                element:
-                    "Dasar-dasar Literasi dan STEAM",
-
-                activity:
-                    "Mengenal bentuk dan warna."
-
-            }
-
-        ],
-
-        catatan:
-            "Ananda mengikuti kegiatan dengan baik."
-
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="empty">
+                Belum ada riwayat jurnal yang diunduh.
+            </div>
+        `;
+        return;
     }
 
-];
+    container.innerHTML = "";
 
+    filtered.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "history-item";
 
-
-/* =====================================================
-   RENDER HISTORY
-===================================================== */
-
-function renderHistory() {
-
-
-    const container =
-        document.getElementById(
-            "historyContainer"
-        );
-
-
-    const search =
-        document.getElementById(
-            "search"
-        ).value
-        .toLowerCase()
-        .trim();
-
-
-
-    const filtered =
-        sampleData.filter(
-            item =>
-                item.nama
-                    .toLowerCase()
-                    .includes(search)
-        );
-
-
-
-    if (
-        filtered.length === 0
-    ) {
-
-
-        container.innerHTML = `
-
-            <div class="empty">
-
-                Belum ada riwayat jurnal.
-
+        div.innerHTML = `
+            <div class="history-header">
+                <div>
+                    <div class="student-name">
+                        ${escapeHTML(item.nama)}
+                    </div>
+                    <div class="meta">
+                        ${escapeHTML(item.jenis || "TK")}
+                        ·
+                        Kelas: ${escapeHTML(item.kelas || "-")}
+                        ·
+                        Pekan ${escapeHTML(item.pekan || item.pekan || "-")}
+                        ·
+                        ${escapeHTML(item.periode || "-")}
+                        ·
+                        <span style="color:#47745f; font-weight:bold;">Unduh: ${escapeHTML(item.tanggal || "-")}</span>
+                    </div>
+                </div>
             </div>
 
+            <div class="actions">
+                <button class="view" onclick="toggleDetail(${index})">
+                    👀 Lihat Catatan
+                </button>
+                <button class="delete" onclick="deleteHistory(${item.id})">
+                    🗑️ Hapus
+                </button>
+            </div>
+
+            <div class="detail" id="detail-${index}">
+                <p><b>Catatan Guru / Perkembangan:</b></p>
+                <p style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #e0e5e2;">
+                    ${escapeHTML(item.catatan || "Tidak ada catatan.")}
+                </p>
+            </div>
         `;
 
-
-        return;
-
-    }
-
-
-
-    container.innerHTML =
-        "";
-
-
-
-    filtered.forEach(
-        (item, index) => {
-
-
-            const div =
-                document.createElement(
-                    "div"
-                );
-
-
-            div.className =
-                "history-item";
-
-
-            div.innerHTML = `
-
-                <div class="history-header">
-
-                    <div>
-
-                        <div class="student-name">
-
-                            ${escapeHTML(item.nama)}
-
-                        </div>
-
-                        <div class="meta">
-
-                            ${escapeHTML(item.jenis)}
-                            ·
-                            ${escapeHTML(item.kelas)}
-                            ·
-                            ${escapeHTML(item.sekolah)}
-                            ·
-                            Pekan ${escapeHTML(item.pekan)}
-                            ·
-                            ${escapeHTML(item.periode)}
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="actions">
-
-                    <button
-                        class="view"
-                        onclick="toggleDetail(${index})"
-                    >
-
-                        👀 Lihat
-
-                    </button>
-
-
-                    <button
-                        class="delete"
-                        onclick="deleteHistory(${index})"
-                    >
-
-                        🗑️ Hapus
-
-                    </button>
-
-                </div>
-
-
-                <div
-                    class="detail"
-                    id="detail-${index}"
-                >
-
-                    <table>
-
-                        <thead>
-
-                            <tr>
-
-                                <th>
-                                    No
-                                </th>
-
-                                <th>
-                                    Elemen
-                                </th>
-
-                                <th>
-                                    Kegiatan
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
-
-                        <tbody>
-
-                            ${item.activities
-                                .map(
-                                    (activity, i) => `
-
-                                    <tr>
-
-                                        <td>
-                                            ${i + 1}
-                                        </td>
-
-                                        <td>
-                                            ${escapeHTML(activity.element)}
-                                        </td>
-
-                                        <td>
-                                            ${escapeHTML(activity.activity)}
-                                        </td>
-
-                                    </tr>
-
-                                `
-                                )
-                                .join("")}
-
-                        </tbody>
-
-                    </table>
-
-
-                    <p>
-
-                        <b>
-                            Catatan:
-                        </b>
-
-                        ${escapeHTML(item.catatan || "-")}
-
-                    </p>
-
-                </div>
-
-            `;
-
-
-            container.appendChild(
-                div
-            );
-
-        }
-    );
-
+        container.appendChild(div);
+    });
 }
 
-
-
 /* =====================================================
-   DETAIL
+   DETAIL & DELETE
 ===================================================== */
-
 function toggleDetail(index) {
-
-
-    const detail =
-        document.getElementById(
-            "detail-" + index
-        );
-
-
-    if (
-        detail.style.display ===
-        "block"
-    ) {
-
-        detail.style.display =
-            "none";
-
+    const detail = document.getElementById("detail-" + index);
+    if (detail.style.display === "block") {
+        detail.style.display = "none";
+    } else {
+        detail.style.display = "block";
     }
-
-    else {
-
-        detail.style.display =
-            "block";
-
-    }
-
 }
 
+function deleteHistory(id) {
+    const confirmed = confirm("Yakin ingin menghapus riwayat jurnal ini?");
+    if (!confirmed) return;
 
+    const HISTORY_KEY = "balitaPelangi_jurnalHistory";
+    let historyData = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
 
-/* =====================================================
-   DELETE
-===================================================== */
+    // Hapus data berdasarkan ID uniknya
+    historyData = historyData.filter(item => item.id !== id);
 
-function deleteHistory(index) {
+    // Simpan kembali ke localStorage
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
 
-
-    const confirmed =
-        confirm(
-            "Yakin ingin menghapus jurnal ini?"
-        );
-
-
-    if (!confirmed) {
-
-        return;
-
-    }
-
-
-    /*
-        DATA CONTOH SAJA.
-
-        Nanti fungsi ini akan
-        menghapus data dari database.
-    */
-
-    sampleData.splice(
-        index,
-        1
-    );
-
-
+    // Render ulang tampilan
     renderHistory();
-
 }
-
-
 
 /* =====================================================
    ESCAPE HTML
 ===================================================== */
-
 function escapeHTML(text) {
-
-
-    return String(text)
-
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-
-        .replace(
-            /</g,
-            "&lt;"
-        )
-
-        .replace(
-            />/g,
-            "&gt;"
-        )
-
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
+    return String(text || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
-
-
 
 /* =====================================================
-   CEK LOGIN
+   AUTO CEK LOGIN SAAT HALAMAN DIBUKA
 ===================================================== */
-
-if (
-    sessionStorage.getItem(
-        "adminLogin"
-    ) === "true"
-) {
-
-
-    document.getElementById(
-        "loginPage"
-    ).style.display =
-        "none";
-
-
-    document.getElementById(
-        "adminPage"
-    ).style.display =
-        "block";
-
-
+if (sessionStorage.getItem("adminLogin") === "true") {
+    document.getElementById("loginPage").style.display = "none";
+    document.getElementById("adminPage").style.display = "block";
     renderHistory();
-
 }
 
-function togglePassword() {
-
-    const password =
-        document.getElementById("password");
-
-    const button =
-        document.getElementById("togglePasswordButton");
-
-    if (password.type === "password") {
-
-        password.type = "text";
-
-        button.textContent = "🙈";
-
-    } else {
-
-        password.type = "password";
-
-        button.textContent = "👁️";
-
-    }
-
-}
 
 </script>
 
