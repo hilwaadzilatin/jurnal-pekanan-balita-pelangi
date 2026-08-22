@@ -1720,114 +1720,94 @@ function saveToHistory() {
 
 async function saveToSupabase() {
 
-    const data =
-        getFormData();
+    const data = getFormData();
 
-
-    if (
-        !data.nama ||
-        data.nama.trim() === ""
-    ) {
-
+    if (!data.nama || data.nama.trim() === "") {
         return {
             success: false,
             skipped: true
         };
-
     }
 
-
     const entry = {
-
-        nama:
-            data.nama.trim(),
-
-        jenis:
-            data.jenis,
-
-        kelas:
-            data.kelas,
-
-        pekan:
-            String(data.pekan || "1"),
-
-        periode:
-            data.periode || "-",
-
-        tanggal:
-            getTanggalHariIni(),
-
-        catatan:
-            data.catatan || "-",
-
-        activities:
-            data.activities
-
+        nama: data.nama.trim(),
+        jenis: data.jenis,
+        kelas: data.kelas,
+        pekan: String(data.pekan || "1"),
+        periode: data.periode || "-",
+        tanggal: getTanggalHariIni(),
+        catatan: data.catatan || "-",
+        activities: data.activities
     };
-
 
     try {
 
         const {
             data: result,
             error
-        } =
-            await supabaseClient
-                .from(
-                    SUPABASE_TABLE
-                )
-                .insert(
-                    [entry]
-                )
-                .select();
-
+        } = await supabaseClient
+            .from("jurnal_balita_pelangi")
+            .insert([entry])
+            .select();
 
         if (error) {
 
-            console.error(
-                "Supabase error:",
-                error
+            console.error("DETAIL SUPABASE ERROR:", {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code,
+                status: error.status
+            });
+
+            alert(
+                "❌ Gagal menyimpan ke Supabase\n\n" +
+                "Code: " + (error.code || "-") + "\n" +
+                "Message: " + (error.message || "-") + "\n" +
+                "Details: " + (error.details || "-") + "\n" +
+                "Hint: " + (error.hint || "-")
             );
 
             return {
                 success: false,
                 error: error
             };
-
         }
 
-
         console.log(
-            "Berhasil disimpan ke Supabase:",
+            "BERHASIL MASUK SUPABASE:",
             result
         );
 
+        alert(
+            "✅ Berhasil!\n\n" +
+            "Jurnal sudah tersimpan di Supabase."
+        );
 
         return {
             success: true,
             data: result
         };
 
-    }
-
-    catch(error) {
+    } catch (error) {
 
         console.error(
-            "Supabase connection error:",
+            "SUPABASE CONNECTION ERROR:",
             error
         );
 
+        alert(
+            "❌ Terjadi error koneksi:\n\n" +
+            error.message
+        );
 
         return {
             success: false,
             error: error
         };
-
     }
-
 }
-
-
+    
 /* =====================================================
    DOWNLOAD PNG
 ===================================================== */
