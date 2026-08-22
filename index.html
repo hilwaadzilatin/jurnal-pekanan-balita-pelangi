@@ -207,6 +207,26 @@ button {
     margin: auto;
     padding: 55px;
     border: 1px solid #ddd;
+    position: relative;
+    overflow: hidden;
+}
+
+.journal-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 420px;
+    height: 420px;
+    object-fit: contain;
+    transform: translate(-50%, -50%);
+    opacity: 0.12;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.journal > *:not(.journal-watermark) {
+    position: relative;
+    z-index: 1;
 }
 
 
@@ -608,6 +628,11 @@ button {
     id="journal"
 >
 
+    <img
+        src="logo.png"
+        class="journal-watermark"
+        alt=""
+    >
 
 <div class="journal-header">
 
