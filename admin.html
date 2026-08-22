@@ -2,6 +2,9 @@
 <html lang="id">
 
 <head>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin - Jurnal Pekanan Balita Pelangi</title>
@@ -251,6 +254,15 @@ button {
 </div>
 
 <script>
+
+const SUPABASE_URL = "https://ccaqawnzcslawxptfrim.supabase.co/";
+const SUPABASE_KEY = "sb_publishable_VuHOjypMkadY-OpcD9L0sQ_bPgdp7kg";
+
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
 function exportToCSV() {
     const historyData = JSON.parse(localStorage.getItem("balitaPelangi_jurnalHistory") || "[]");
 
@@ -334,103 +346,314 @@ function togglePassword() {
 /* =====================================================
    RENDER HISTORY (DENGAN TABEL KEGIATAN)
 ===================================================== */
-function renderHistory() {
-    const container = document.getElementById("historyContainer");
-    const search = document.getElementById("search").value.toLowerCase().trim();
+async function renderHistory() {
 
-    const HISTORY_KEY = "balitaPelangi_jurnalHistory";
-    const historyData = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    const container =
+        document.getElementById("historyContainer");
 
-    const filtered = historyData.filter(item =>
-        (item.nama || "").toLowerCase().includes(search)
-    );
+    const search =
+        document.getElementById("search")
+        .value
+        .toLowerCase()
+        .trim();
 
-    if (filtered.length === 0) {
-        container.innerHTML = `
-            <div class="empty">
-                Belum ada riwayat jurnal yang diunduh.
-            </div>
-        `;
-        return;
-    }
+    container.innerHTML = `
+        <div class="empty">
+            ⏳ Memuat data jurnal...
+        </div>
+    `;
 
-    container.innerHTML = "";
+    try {
 
-    filtered.forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "history-item";
+        const { data, error } =
+            await supabaseClient
+                .from("jurnal_balita_pelangi")
+                .select("*")
+                .order("id", { ascending: false });
 
-        // Susun Baris Tabel Kegiatan
-        let tableRowsHTML = "";
-        if (Array.isArray(item.activities) && item.activities.length > 0) {
-            item.activities.forEach((act, actIdx) => {
-                tableRowsHTML += `
-                    <tr>
-                        <td style="width: 30px; text-align: center;">${actIdx + 1}</td>
-                        <td style="width: 35%;"><b>${escapeHTML(act.element || "-")}</b></td>
-                        <td>${escapeHTML(act.activity || "-")}</td>
-                    </tr>
-                `;
-            });
-        } else {
-            tableRowsHTML = `<tr><td colspan="3" style="text-align:center; color:#888;">Tidak ada rincian kegiatan tersimpan.</td></tr>`;
+        if (error) {
+            console.error("Supabase error:", error);
+
+            container.innerHTML = `
+                <div class="empty" style="color:#a04444;">
+                    ❌ Gagal mengambil data jurnal.<br>
+                    ${escapeHTML(error.message)}
+                </div>
+            `;
+
+            return;
         }
 
-        div.innerHTML = `
-            <div class="history-header">
-                <div>
-                    <div class="student-name">
-                        ${escapeHTML(item.nama)}
-                    </div>
-                    <div class="meta">
-                        ${escapeHTML(item.jenis || "TK")}
-                        ·
-                        Kelas: ${escapeHTML(item.kelas || "-")}
-                        ·
-                        Pekan ${escapeHTML(item.pekan || "-")}
-                        ·
-                        ${escapeHTML(item.periode || "-")}
-                        ·
-                        <span style="color:#47745f; font-weight:bold;">Unduh: ${escapeHTML(item.tanggal || "-")}</span>
-                    </div>
+        const historyData = data || [];
+
+        const filtered =
+            historyData.filter(item =>
+                (item.nama || "")
+                    .toLowerCase()
+                    .includes(search)
+            );
+
+        if (filtered.length === 0) {
+
+            container.innerHTML = `
+                <div class="empty">
+                    Belum ada jurnal yang ditemukan.
                 </div>
-            </div>
+            `;
 
-            <div class="actions">
-                <button class="view" onclick="toggleDetail(${index})">
-                    👀 Lihat Detail & Tabel
-                </button>
-                <button class="delete" onclick="deleteHistory(${item.id})">
-                    🗑️ Hapus
-                </button>
-            </div>
+            return;
+        }
 
-            <div class="detail" id="detail-${index}">
-                <p style="margin-top:0; font-weight:bold; color:#47745f;">📋 Rincian Kegiatan Pekanan:</p>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 30px; text-align: center;">No</th>
-                            <th>Elemen CP</th>
-                            <th>Kegiatan Utama</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tableRowsHTML}
-                    </tbody>
-                </table>
+        container.innerHTML = "";
 
-                <p style="margin-bottom:5px; font-weight:bold; color:#47745f;">📝 Catatan Guru / Perkembangan:</p>
-                <p style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #e0e5e2; margin:0;">
-                    ${escapeHTML(item.catatan || "Tidak ada catatan.")}
-                </p>
+        filtered.forEach((item, index) => {
+
+            const div =
+                document.createElement("div");
+
+            div.className =
+                "history-item";
+
+
+            /* ===============================
+               KEGIATAN
+            =============================== */
+
+            let tableRowsHTML = "";
+
+            if (
+                Array.isArray(item.activities)
+                &&
+                item.activities.length > 0
+            ) {
+
+                item.activities.forEach(
+                    (act, actIdx) => {
+
+                        tableRowsHTML += `
+                            <tr>
+
+                                <td style="
+                                    width:30px;
+                                    text-align:center;
+                                ">
+                                    ${actIdx + 1}
+                                </td>
+
+                                <td style="width:35%;">
+                                    <b>
+                                        ${escapeHTML(
+                                            act.element || "-"
+                                        )}
+                                    </b>
+                                </td>
+
+                                <td>
+                                    ${escapeHTML(
+                                        act.activity || "-"
+                                    )}
+                                </td>
+
+                            </tr>
+                        `;
+
+                    }
+                );
+
+            }
+
+            else {
+
+                tableRowsHTML = `
+                    <tr>
+                        <td
+                            colspan="3"
+                            style="
+                                text-align:center;
+                                color:#888;
+                            "
+                        >
+                            Tidak ada rincian kegiatan.
+                        </td>
+                    </tr>
+                `;
+
+            }
+
+
+            /* ===============================
+               CARD
+            =============================== */
+
+            div.innerHTML = `
+
+                <div class="history-header">
+
+                    <div>
+
+                        <div class="student-name">
+                            ${escapeHTML(
+                                item.nama || "-"
+                            )}
+                        </div>
+
+                        <div class="meta">
+
+                            ${escapeHTML(
+                                item.jenis || "TK"
+                            )}
+
+                            ·
+
+                            Kelas:
+                            ${escapeHTML(
+                                item.kelas || "-"
+                            )}
+
+                            ·
+
+                            Pekan
+                            ${escapeHTML(
+                                item.pekan || "-"
+                            )}
+
+                            ·
+
+                            ${escapeHTML(
+                                item.periode || "-"
+                            )}
+
+                            ·
+
+                            <span style="
+                                color:#47745f;
+                                font-weight:bold;
+                            ">
+                                ${escapeHTML(
+                                    item.tanggal || "-"
+                                )}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="actions">
+
+                    <button
+                        class="view"
+                        onclick="toggleDetail(${index})"
+                    >
+                        👀 Lihat Detail & Tabel
+                    </button>
+
+                    <button
+                        class="delete"
+                        onclick="deleteHistory(${item.id})"
+                    >
+                        🗑️ Hapus
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="detail"
+                    id="detail-${index}"
+                >
+
+                    <p style="
+                        margin-top:0;
+                        font-weight:bold;
+                        color:#47745f;
+                    ">
+                        📋 Rincian Kegiatan Pekanan:
+                    </p>
+
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th style="
+                                    width:30px;
+                                    text-align:center;
+                                ">
+                                    No
+                                </th>
+
+                                <th>
+                                    Elemen CP
+                                </th>
+
+                                <th>
+                                    Kegiatan Utama
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            ${tableRowsHTML}
+
+                        </tbody>
+
+                    </table>
+
+
+                    <p style="
+                        margin-bottom:5px;
+                        font-weight:bold;
+                        color:#47745f;
+                    ">
+                        📝 Catatan Guru / Perkembangan:
+                    </p>
+
+
+                    <p style="
+                        background:white;
+                        padding:10px;
+                        border-radius:6px;
+                        border:1px solid #e0e5e2;
+                        margin:0;
+                    ">
+                        ${escapeHTML(
+                            item.catatan ||
+                            "Tidak ada catatan."
+                        )}
+                    </p>
+
+                </div>
+
+            `;
+
+            container.appendChild(div);
+
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        container.innerHTML = `
+            <div class="empty"
+                 style="color:#a04444;">
+                ❌ Terjadi kesalahan saat
+                mengambil data.
             </div>
         `;
 
-        container.appendChild(div);
-    });
-}
+    }
 
+}
 /* =====================================================
    DETAIL & DELETE
 ===================================================== */
