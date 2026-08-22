@@ -1986,30 +1986,42 @@ function initialize() {
 initialize();
 
 function saveToHistory() {
-    const data = getFormData();
-    
-    // Jangan simpan kalau nama masih kosong
+    const data = getFormData(); // Fungsi ini sudah mengambil semua field + tabel kegiatan
     if (!data.nama || data.nama.trim() === "") return;
 
-    const HISTORY_KEY = "balitaPelangi_jurnalHistory";
-    let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+    let history = JSON.parse(localStorage.getItem("balitaPelangi_jurnalHistory") || "[]");
+    const tglHariIni = new Date().toLocaleDateString("id-ID", {
+        day: 'numeric', month: 'short', year: 'numeric'
+    });
 
-    const newEntry = {
-        id: Date.now(),
-        nama: data.nama,
+    // Cek apakah data anak untuk pekan yang sama sudah pernah di-download hari ini
+    const existingIndex = history.findIndex(item => 
+        item.nama.toLowerCase().trim() === data.nama.toLowerCase().trim() &&
+        item.pekan === data.pekan &&
+        item.tanggal === tglHariIni
+    );
+
+    const entryData = {
+        id: existingIndex !== -1 ? history[existingIndex].id : Date.now(),
+        nama: data.nama.trim(),
+        jenis: data.jenis,
         kelas: data.kelas,
+        sekolah: data.sekolah,
         pekan: data.pekan,
         periode: data.periode || "-",
-        tanggal: new Date().toLocaleDateString("id-ID", {
-            day: 'numeric', month: 'short', year: 'numeric'
-        }),
-        catatan: data.catatan || "-"
+        tanggal: tglHariIni,
+        catatan: data.catatan || "-",
+        activities: data.activities // <-- INI YANG MENYIMPAN DETAIL TABEL KEGIATAN
     };
 
-    history.unshift(newEntry);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-}
+    if (existingIndex !== -1) {
+        history[existingIndex] = entryData; // Update data jika di-download ulang
+    } else {
+        history.unshift(entryData); // Tambahkan ke paling atas
+    }
 
+    localStorage.setItem("balitaPelangi_jurnalHistory", JSON.stringify(history));
+}
 </script>
 
 
