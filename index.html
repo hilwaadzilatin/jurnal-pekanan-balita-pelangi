@@ -1778,10 +1778,7 @@ async function saveToSupabase() {
             result
         );
 
-        alert(
-            "✅ Berhasil!\n\n" +
-            "Jurnal berhasil sudah tersimpan."
-        );
+        showToast("✅ Jurnal berhasil disimpan.");
 
         return {
             success: true,
