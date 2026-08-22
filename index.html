@@ -10,10 +10,10 @@
 
 <title>Jurnal Pekanan - Balita Pelangi</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <!-- html2canvas lokal -->
 <script src="html2canvas.min.js"></script>
-
 
 <!-- jsPDF dari CDN -->
 <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
@@ -800,12 +800,38 @@ button {
 
 <script>
 
+
+/* =====================================================
+   SUPABASE
+===================================================== */
+
+const SUPABASE_URL =
+    "https://ccaqawnzcslawxptfrim.supabase.co/";
+
+const SUPABASE_KEY =
+    "sb_publishable_VuHOjypMkadY-OpcD9L0sQ_bPgdp7kg";
+
+const supabaseClient =
+    supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+    );
+
+
+const SUPABASE_TABLE =
+    "jurnal_balita_pelangi";
+
+
 /* =====================================================
    KONSTANTA
 ===================================================== */
 
 const DRAFT_KEY =
     "balitaPelangi_jurnalDraft";
+
+
+const HISTORY_KEY =
+    "balitaPelangi_jurnalHistory";
 
 
 const defaultElements = [
@@ -1097,25 +1123,39 @@ function updatePreview() {
                     "tr"
                 );
 
-            row.innerHTML = `
 
-                <td>
-                    ${index + 1}
-                </td>
+            const noCell =
+                document.createElement(
+                    "td"
+                );
 
-                <td>
-                    ${escapeHTML(
-                        element.value || "-"
-                    )}
-                </td>
+            noCell.textContent =
+                index + 1;
 
-                <td>
-                    ${escapeHTML(
-                        activities[index].value || "-"
-                    )}
-                </td>
 
-            `;
+            const elementCell =
+                document.createElement(
+                    "td"
+                );
+
+            elementCell.textContent =
+                element.value || "-";
+
+
+            const activityCell =
+                document.createElement(
+                    "td"
+                );
+
+            activityCell.textContent =
+                activities[index]?.value || "-";
+
+
+            row.appendChild(noCell);
+
+            row.appendChild(elementCell);
+
+            row.appendChild(activityCell);
 
             preview.appendChild(row);
 
@@ -1153,7 +1193,9 @@ function getFormData() {
                     element.value,
 
                 activity:
-                    activities[index].value
+                    activities[index]
+                    ? activities[index].value
+                    : ""
 
             });
 
@@ -1539,13 +1581,260 @@ function newJournal() {
 
 
 /* =====================================================
+   TANGGAL HARI INI
+===================================================== */
+
+function getTanggalHariIni() {
+
+    return new Date().toLocaleDateString(
+        "id-ID",
+        {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        }
+    );
+
+}
+
+
+/* =====================================================
+   SAVE HISTORY LOCAL
+===================================================== */
+
+function saveToHistory() {
+
+    const data =
+        getFormData();
+
+
+    if (
+        !data.nama ||
+        data.nama.trim() === ""
+    ) {
+
+        return;
+
+    }
+
+
+    let history =
+        JSON.parse(
+            localStorage.getItem(
+                "balitaPelangi_jurnalHistory"
+            ) || "[]"
+        );
+
+
+    const tglHariIni =
+        getTanggalHariIni();
+
+
+    const existingIndex =
+        history.findIndex(
+            item =>
+                item.nama
+                    .toLowerCase()
+                    .trim() ===
+                data.nama
+                    .toLowerCase()
+                    .trim()
+                &&
+                String(item.pekan) ===
+                String(data.pekan)
+                &&
+                item.tanggal ===
+                tglHariIni
+        );
+
+
+    const entryData = {
+
+        id:
+            existingIndex !== -1
+            ? history[existingIndex].id
+            : Date.now(),
+
+        nama:
+            data.nama.trim(),
+
+        jenis:
+            data.jenis,
+
+        kelas:
+            data.kelas,
+
+        sekolah:
+            data.sekolah,
+
+        pekan:
+            String(data.pekan),
+
+        periode:
+            data.periode || "-",
+
+        tanggal:
+            tglHariIni,
+
+        catatan:
+            data.catatan || "-",
+
+        activities:
+            data.activities
+
+    };
+
+
+    if (
+        existingIndex !== -1
+    ) {
+
+        history[existingIndex] =
+            entryData;
+
+    }
+
+    else {
+
+        history.unshift(
+            entryData
+        );
+
+    }
+
+
+    localStorage.setItem(
+        "balitaPelangi_jurnalHistory",
+        JSON.stringify(history)
+    );
+
+
+    return entryData;
+
+}
+
+
+/* =====================================================
+   SAVE KE SUPABASE
+===================================================== */
+
+async function saveToSupabase() {
+
+    const data =
+        getFormData();
+
+
+    if (
+        !data.nama ||
+        data.nama.trim() === ""
+    ) {
+
+        return {
+            success: false,
+            skipped: true
+        };
+
+    }
+
+
+    const entry = {
+
+        nama:
+            data.nama.trim(),
+
+        jenis:
+            data.jenis,
+
+        kelas:
+            data.kelas,
+
+        pekan:
+            String(data.pekan || "1"),
+
+        periode:
+            data.periode || "-",
+
+        tanggal:
+            getTanggalHariIni(),
+
+        catatan:
+            data.catatan || "-",
+
+        activities:
+            data.activities
+
+    };
+
+
+    try {
+
+        const {
+            data: result,
+            error
+        } =
+            await supabaseClient
+                .from(
+                    SUPABASE_TABLE
+                )
+                .insert(
+                    [entry]
+                )
+                .select();
+
+
+        if (error) {
+
+            console.error(
+                "Supabase error:",
+                error
+            );
+
+            return {
+                success: false,
+                error: error
+            };
+
+        }
+
+
+        console.log(
+            "Berhasil disimpan ke Supabase:",
+            result
+        );
+
+
+        return {
+            success: true,
+            data: result
+        };
+
+    }
+
+    catch(error) {
+
+        console.error(
+            "Supabase connection error:",
+            error
+        );
+
+
+        return {
+            success: false,
+            error: error
+        };
+
+    }
+
+}
+
+
+/* =====================================================
    DOWNLOAD PNG
 ===================================================== */
 
 async function downloadPNG() {
 
     updatePreview();
-    saveToHistory();
 
 
     if (
@@ -1565,6 +1854,8 @@ async function downloadPNG() {
     try {
 
         saveDraft();
+
+        saveToHistory();
 
 
         const journal =
@@ -1619,10 +1910,31 @@ async function downloadPNG() {
         );
 
 
-        setDraftStatus(
-            "saved",
-            "🟢 Jurnal tersimpan & PNG berhasil dibuat"
-        );
+        /* Simpan ke Supabase */
+
+        const result =
+            await saveToSupabase();
+
+
+        if (
+            result.success
+        ) {
+
+            setDraftStatus(
+                "saved",
+                "🟢 Jurnal tersimpan & PNG berhasil dibuat"
+            );
+
+        }
+
+        else {
+
+            setDraftStatus(
+                "saved",
+                "🟢 PNG berhasil dibuat · Draft tetap tersimpan"
+            );
+
+        }
 
     }
 
@@ -1649,7 +1961,6 @@ async function downloadPNG() {
 async function downloadPDF() {
 
     updatePreview();
-    saveToHistory();
 
 
     if (
@@ -1684,6 +1995,8 @@ async function downloadPDF() {
     try {
 
         saveDraft();
+
+        saveToHistory();
 
 
         const journal =
@@ -1749,12 +2062,6 @@ async function downloadPDF() {
             canvas.width;
 
 
-        /*
-            Kalau jurnal melebihi
-            satu halaman A4, otomatis
-            dibagi menjadi beberapa halaman.
-        */
-
         let heightLeft =
             imageHeight;
 
@@ -1817,10 +2124,31 @@ async function downloadPDF() {
         );
 
 
-        setDraftStatus(
-            "saved",
-            "🟢 Jurnal tersimpan & PDF berhasil dibuat"
-        );
+        /* Simpan ke Supabase */
+
+        const result =
+            await saveToSupabase();
+
+
+        if (
+            result.success
+        ) {
+
+            setDraftStatus(
+                "saved",
+                "🟢 Jurnal tersimpan & PDF berhasil dibuat"
+            );
+
+        }
+
+        else {
+
+            setDraftStatus(
+                "saved",
+                "🟢 PDF berhasil dibuat · Draft tetap tersimpan"
+            );
+
+        }
 
     }
 
@@ -1985,43 +2313,7 @@ function initialize() {
 
 initialize();
 
-function saveToHistory() {
-    const data = getFormData(); // Fungsi ini sudah mengambil semua field + tabel kegiatan
-    if (!data.nama || data.nama.trim() === "") return;
 
-    let history = JSON.parse(localStorage.getItem("balitaPelangi_jurnalHistory") || "[]");
-    const tglHariIni = new Date().toLocaleDateString("id-ID", {
-        day: 'numeric', month: 'short', year: 'numeric'
-    });
-
-    // Cek apakah data anak untuk pekan yang sama sudah pernah di-download hari ini
-    const existingIndex = history.findIndex(item => 
-        item.nama.toLowerCase().trim() === data.nama.toLowerCase().trim() &&
-        item.pekan === data.pekan &&
-        item.tanggal === tglHariIni
-    );
-
-    const entryData = {
-        id: existingIndex !== -1 ? history[existingIndex].id : Date.now(),
-        nama: data.nama.trim(),
-        jenis: data.jenis,
-        kelas: data.kelas,
-        sekolah: data.sekolah,
-        pekan: data.pekan,
-        periode: data.periode || "-",
-        tanggal: tglHariIni,
-        catatan: data.catatan || "-",
-        activities: data.activities // <-- INI YANG MENYIMPAN DETAIL TABEL KEGIATAN
-    };
-
-    if (existingIndex !== -1) {
-        history[existingIndex] = entryData; // Update data jika di-download ulang
-    } else {
-        history.unshift(entryData); // Tambahkan ke paling atas
-    }
-
-    localStorage.setItem("balitaPelangi_jurnalHistory", JSON.stringify(history));
-}
 </script>
 
 
