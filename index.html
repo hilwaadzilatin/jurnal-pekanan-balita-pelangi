@@ -1748,7 +1748,6 @@ async function saveToSupabase() {
         } = await supabaseClient
             .from("jurnal_balita_pelangi")
             .insert([entry])
-            .select();
 
         if (error) {
 
