@@ -558,6 +558,8 @@ button {
     class="download-button"
     onclick="downloadPNG()"
 >
+🧪 Tes Supabase
+</button>
 
     🖼️ Download Jurnal PNG
 
@@ -2292,6 +2294,48 @@ function initialize() {
 
 initialize();
 
+async function testSupabase() {
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient
+            .from("jurnal_balita_pelangi")
+            .select("*")
+            .limit(1);
+
+        if (error) {
+
+            alert(
+                "❌ Supabase gagal\n\n" +
+                "Code: " + (error.code || "-") + "\n" +
+                "Message: " + (error.message || "-")
+            );
+
+            return;
+        }
+
+        alert(
+            "✅ Supabase berhasil terhubung!\n\n" +
+            "Data berhasil dibaca: " +
+            data.length +
+            " baris."
+        );
+
+    }
+
+    catch (error) {
+
+        alert(
+            "❌ Error:\n\n" +
+            error.message
+        );
+
+    }
+
+}
 
 </script>
 
