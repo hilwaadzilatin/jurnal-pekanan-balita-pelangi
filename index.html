@@ -1760,7 +1760,7 @@ async function saveToSupabase() {
             });
 
             alert(
-                "❌ Gagal menyimpan ke Supabase\n\n" +
+                "❌ Gagal menyimpan Jurnal\n\n" +
                 "Code: " + (error.code || "-") + "\n" +
                 "Message: " + (error.message || "-") + "\n" +
                 "Details: " + (error.details || "-") + "\n" +
@@ -1780,7 +1780,7 @@ async function saveToSupabase() {
 
         alert(
             "✅ Berhasil!\n\n" +
-            "Jurnal sudah tersimpan di Supabase."
+            "Jurnal berhasil sudah tersimpan."
         );
 
         return {
