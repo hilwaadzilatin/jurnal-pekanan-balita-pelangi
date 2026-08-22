@@ -263,45 +263,216 @@ const supabaseClient = supabase.createClient(
     SUPABASE_KEY
 );
 
-function exportToCSV() {
-    const historyData = JSON.parse(localStorage.getItem("balitaPelangi_jurnalHistory") || "[]");
+async function exportToCSV() {
 
-    if (historyData.length === 0) {
-        alert("Belum ada data riwayat untuk diexport!");
-        return;
-    }
+    try {
 
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "No,Nama Siswa,Layanan,Kelas,Pekan,Periode,Tanggal Unduh,Rincian Kegiatan,Catatan Guru\n";
+        // Ambil semua data langsung dari Supabase
+        const { data: historyData, error } =
+            await supabaseClient
+                .from("jurnal_balita_pelangi")
+                .select("*")
+                .order("id", { ascending: false });
 
-    historyData.forEach((item, index) => {
-        // Gabungkan elemen & kegiatan jadi teks rapi di Excel
-        let activitiesText = "";
-        if (Array.isArray(item.activities)) {
-            activitiesText = item.activities.map(a => `${a.element}: ${a.activity}`).join(" | ");
+
+        if (error) {
+
+            console.error(
+                "Supabase export error:",
+                error
+            );
+
+            alert(
+                "❌ Gagal mengambil data dari Supabase.\n\n" +
+                error.message
+            );
+
+            return;
         }
 
-        const row = [
-            index + 1,
-            `"${(item.nama || '').replace(/"/g, '""')}"`,
-            `"${(item.jenis || '').replace(/"/g, '""')}"`,
-            `"${(item.kelas || '').replace(/"/g, '""')}"`,
-            `"${item.pekan || '-'}"`,
-            `"${(item.periode || '').replace(/"/g, '""')}"`,
-            `"${item.tanggal || '-'}"`,
-            `"${activitiesText.replace(/"/g, '""')}"`,
-            `"${(item.catatan || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`
-        ];
-        csvContent += row.join(",") + "\n";
-    });
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Rekap_Jurnal_BalitaPelangi_${new Date().toISOString().slice(0,10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+        if (
+            !historyData ||
+            historyData.length === 0
+        ) {
+
+            alert(
+                "Belum ada data jurnal di Supabase."
+            );
+
+            return;
+        }
+
+
+        let csvContent =
+            "data:text/csv;charset=utf-8,";
+
+
+        csvContent +=
+            "No,Nama Siswa,Layanan,Kelas,Pekan,Periode,Tanggal,Rincian Kegiatan,Catatan Guru\n";
+
+
+        historyData.forEach(
+            (item, index) => {
+
+                // =================================================
+                // GABUNGKAN KEGIATAN
+                // =================================================
+
+                let activitiesText = "";
+
+                if (
+                    Array.isArray(
+                        item.activities
+                    )
+                ) {
+
+                    activitiesText =
+                        item.activities
+                            .map(
+                                activity =>
+                                    `${activity.element || "-"}: ${activity.activity || "-"}`
+                            )
+                            .join(" | ");
+
+                }
+
+
+                // =================================================
+                // DATA BARIS
+                // =================================================
+
+                const row = [
+
+                    index + 1,
+
+                    `"${String(
+                        item.nama || ""
+                    ).replace(
+                        /"/g,
+                        '""'
+                    )}"`,
+
+                    `"${String(
+                        item.jenis || ""
+                    ).replace(
+                        /"/g,
+                        '""'
+                    )}"`,
+
+                    `"${String(
+                        item.kelas || ""
+                    ).replace(
+                        /"/g,
+                        '""'
+                    )}"`,
+
+                    `"${String(
+                        item.pekan || "-"
+                    ).replace(
+                        /"/g,
+                        '""'
+                    )}"`,
+
+                    `"${String(
+                        item.periode || ""
+                    ).replace(
+                        /"/g,
+                        '""'
+                    )}"`,
+
+                    `"${String(
+                        item.tanggal || "-"
+                    ).replace(
+                        /"/g,
+                        '""'
+                    )}"`,
+
+                    `"${activitiesText.replace(
+                        /"/g,
+                        '""'
+                    )}"`,
+
+                    `"${String(
+                        item.catatan || ""
+                    )
+                        .replace(
+                            /"/g,
+                            '""'
+                        )
+                        .replace(
+                            /\n/g,
+                            " "
+                        )}"`
+
+                ];
+
+
+                csvContent +=
+                    row.join(",") +
+                    "\n";
+
+            }
+        );
+
+
+        // =================================================
+        // DOWNLOAD CSV
+        // =================================================
+
+        const encodedUri =
+            encodeURI(csvContent);
+
+
+        const link =
+            document.createElement("a");
+
+
+        link.setAttribute(
+            "href",
+            encodedUri
+        );
+
+
+        link.setAttribute(
+            "download",
+            `Rekap_Jurnal_BalitaPelangi_${new Date()
+                .toISOString()
+                .slice(0, 10)}.csv`
+        );
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        document.body.removeChild(
+            link
+        );
+
+
+        alert(
+            "✅ Data jurnal berhasil diexport dari Supabase."
+        );
+
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "❌ Terjadi kesalahan saat export.\n\n" +
+            error.message
+        );
+
+    }
+
 }
 
 /* =====================================================
