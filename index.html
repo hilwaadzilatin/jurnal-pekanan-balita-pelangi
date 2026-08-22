@@ -219,7 +219,7 @@ button {
     height: 420px;
     object-fit: contain;
     transform: translate(-50%, -50%);
-    opacity: 0.12;
+    opacity: 0.1;
     pointer-events: none;
     z-index: 0;
 }
@@ -317,6 +317,7 @@ button {
     width: 100%;
     border-collapse: collapse;
     font-size: 12px;
+    table-layout: fixed;
 }
 
 .journal-table th,
@@ -324,6 +325,8 @@ button {
     border: 1px solid #777;
     padding: 9px;
     vertical-align: top;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .journal-table th {
