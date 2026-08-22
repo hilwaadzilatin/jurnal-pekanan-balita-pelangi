@@ -1860,7 +1860,29 @@ async function saveToSupabase() {
    DOWNLOAD PNG
 ===================================================== */
 
+function validateJournal() {
+    const nama = document.getElementById("nama").value.trim();
+    const periode = document.getElementById("periode").value.trim();
+
+    if (!nama) {
+        showToast("⚠️ Nama siswa belum diisi.");
+        document.getElementById("nama").focus();
+        return false;
+    }
+
+    if (!periode) {
+        showToast("⚠️ Periode jurnal belum diisi.");
+        document.getElementById("periode").focus();
+        return false;
+    }
+
+    return true;
+}
+
 async function downloadPNG() {
+    if (!validateJournal()) {
+        return;
+    }
 
     updatePreview();
 
@@ -1988,6 +2010,9 @@ async function downloadPNG() {
 
 async function downloadPDF() {
 
+    if (!validateJournal()) {
+        return;
+    }
     updatePreview();
 
 
