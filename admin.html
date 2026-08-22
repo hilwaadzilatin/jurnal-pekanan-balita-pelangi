@@ -785,17 +785,59 @@ function toggleDetail(index) {
     }
 }
 
-function deleteHistory(id) {
-    const confirmed = confirm("Yakin ingin menghapus riwayat jurnal ini?");
+async function deleteHistory(id) {
+
+    const confirmed = confirm(
+        "Yakin ingin menghapus jurnal ini?"
+    );
+
     if (!confirmed) return;
 
-    const HISTORY_KEY = "balitaPelangi_jurnalHistory";
-    let historyData = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
 
-    historyData = historyData.filter(item => item.id !== id);
+    try {
 
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
-    renderHistory();
+        const { error } =
+            await supabaseClient
+                .from("jurnal_balita_pelangi")
+                .delete()
+                .eq("id", id);
+
+
+        if (error) {
+
+            console.error(
+                "Gagal menghapus jurnal:",
+                error
+            );
+
+            alert(
+                "❌ Jurnal belum berhasil dihapus.\n\n" +
+                error.message
+            );
+
+            return;
+        }
+
+
+        alert(
+            "✅ Jurnal berhasil dihapus."
+        );
+
+
+        // Tampilkan ulang data dari Supabase
+        renderHistory();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "❌ Terjadi kesalahan saat menghapus jurnal."
+        );
+
+    }
+
 }
 
 /* =====================================================
