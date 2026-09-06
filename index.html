@@ -2062,162 +2062,199 @@ async function downloadPDF() {
     if (!validateJournal()) {
         return;
     }
+
     updatePreview();
 
-
-    if (
-        typeof html2canvas ===
-        "undefined"
-    ) {
-
-        alert(
-            "html2canvas belum berhasil dimuat."
-        );
-
+    if (typeof html2canvas === "undefined") {
+        alert("html2canvas belum berhasil dimuat.");
         return;
-
     }
 
-
-    if (
-        !window.jspdf ||
-        !window.jspdf.jsPDF
-    ) {
-
+    if (!window.jspdf || !window.jspdf.jsPDF) {
         alert(
             "Library PDF belum berhasil dimuat.\n\n" +
             "Pastikan laptop/HP terhubung ke internet."
         );
-
         return;
-
     }
-
 
     try {
 
         saveDraft();
-
         saveToHistory();
 
+        const journal = document.getElementById("journal");
 
-        const journal =
-            document.getElementById(
-                "journal"
-            );
+        /* ================================
+           Buat salinan jurnal khusus PDF
+           ================================ */
 
+        const pdfJournal = journal.cloneNode(true);
 
-        const canvas =
-            await html2canvas(
-                journal,
-                {
-                    scale: 2,
-                    backgroundColor: "#ffffff",
-                    useCORS: true
-                }
-            );
+        pdfJournal.style.position = "absolute";
+        pdfJournal.style.left = "-99999px";
+        pdfJournal.style.top = "0";
+        pdfJournal.style.margin = "0";
+        pdfJournal.style.width = "794px";
+        pdfJournal.style.background = "#ffffff";
 
+        document.body.appendChild(pdfJournal);
 
-        const imgData =
-            canvas.toDataURL(
-                "image/jpeg",
-                0.92
-            );
+        /* Supaya Catatan Guru tidak terpotong */
+        const note = pdfJournal.querySelector(".note");
 
+        if (note) {
+            note.style.breakInside = "avoid";
+            note.style.pageBreakInside = "avoid";
+        }
 
-        const jsPDF =
-            window.jspdf.jsPDF;
+        /* Supaya baris tabel tidak dipotong sebisa mungkin */
+        const rows = pdfJournal.querySelectorAll(
+            ".journal-table tr"
+        );
 
+        rows.forEach(row => {
+            row.style.breakInside = "avoid";
+            row.style.pageBreakInside = "avoid";
+        });
 
-        const pdf =
-            new jsPDF({
-                orientation: "portrait",
-                unit: "mm",
-                format: "a4",
-                compress: true
-            });
+        /* ================================
+           Render ke canvas
+           ================================ */
 
+        const canvas = await html2canvas(
+            pdfJournal,
+            {
+                scale: 2,
+                backgroundColor: "#ffffff",
+                useCORS: true
+            }
+        );
+
+        document.body.removeChild(pdfJournal);
+
+        const imgData = canvas.toDataURL(
+            "image/jpeg",
+            0.92
+        );
+
+        const jsPDF = window.jspdf.jsPDF;
+
+        const pdf = new jsPDF({
+            orientation: "portrait",
+            unit: "mm",
+            format: "a4",
+            compress: true
+        });
 
         const pageWidth =
             pdf.internal.pageSize.getWidth();
 
-
         const pageHeight =
             pdf.internal.pageSize.getHeight();
 
-
         const margin = 8;
 
-
         const availableWidth =
-            pageWidth -
-            (margin * 2);
+            pageWidth - (margin * 2);
 
+        const availableHeight =
+            pageHeight - (margin * 2);
 
-        const imageWidth =
-            availableWidth;
-
+        const imageWidth = availableWidth;
 
         const imageHeight =
             canvas.height *
             imageWidth /
             canvas.width;
 
+        /*
+         * Buat halaman berdasarkan tinggi gambar.
+         * Setiap bagian gambar ditempatkan tepat
+         * di dalam area A4.
+         */
 
-        let heightLeft =
-            imageHeight;
+        let remainingHeight = imageHeight;
+        let sourceY = 0;
 
+        while (remainingHeight > 0) {
 
-        let position =
-            margin;
-
-
-        pdf.addImage(
-            imgData,
-            "JPEG",
-            margin,
-            position,
-            imageWidth,
-            imageHeight
-        );
-
-
-        heightLeft -=
-            pageHeight -
-            margin * 2;
-
-
-        while (
-            heightLeft > 0
-        ) {
-
-            position =
-                margin -
-                (
-                    imageHeight -
-                    heightLeft
+            const currentPageHeight =
+                Math.min(
+                    availableHeight,
+                    remainingHeight
                 );
 
+            /*
+             * Tinggi bagian gambar yang akan
+             * ditampilkan pada halaman ini.
+             */
 
-            pdf.addPage();
+            const sourceHeight =
+                currentPageHeight *
+                canvas.width /
+                imageWidth;
 
+            /*
+             * Buat canvas kecil untuk potongan
+             * halaman saat ini.
+             */
 
-            pdf.addImage(
-                imgData,
-                "JPEG",
-                margin,
-                position,
-                imageWidth,
-                imageHeight
+            const pageCanvas =
+                document.createElement("canvas");
+
+            pageCanvas.width = canvas.width;
+
+            pageCanvas.height = sourceHeight;
+
+            const ctx =
+                pageCanvas.getContext("2d");
+
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(
+                0,
+                0,
+                pageCanvas.width,
+                pageCanvas.height
             );
 
+            ctx.drawImage(
+                canvas,
+                0,
+                sourceY,
+                canvas.width,
+                sourceHeight,
+                0,
+                0,
+                pageCanvas.width,
+                pageCanvas.height
+            );
 
-            heightLeft -=
-                pageHeight -
-                margin * 2;
+            const pageImg =
+                pageCanvas.toDataURL(
+                    "image/jpeg",
+                    0.92
+                );
 
+            if (sourceY > 0) {
+                pdf.addPage();
+            }
+
+            const renderedHeight =
+                currentPageHeight;
+
+            pdf.addImage(
+                pageImg,
+                "JPEG",
+                margin,
+                margin,
+                imageWidth,
+                renderedHeight
+            );
+
+            sourceY += sourceHeight;
+            remainingHeight -= currentPageHeight;
         }
-
 
         pdf.save(
             "Jurnal_Pekanan_" +
@@ -2225,25 +2262,19 @@ async function downloadPDF() {
             ".pdf"
         );
 
-
         /* Simpan ke Supabase */
 
         const result =
             await saveToSupabase();
 
-
-        if (
-            result.success
-        ) {
+        if (result.success) {
 
             setDraftStatus(
                 "saved",
                 "🟢 Jurnal tersimpan & PDF berhasil dibuat"
             );
 
-        }
-
-        else {
+        } else {
 
             setDraftStatus(
                 "saved",
@@ -2254,7 +2285,7 @@ async function downloadPDF() {
 
     }
 
-    catch(error) {
+    catch (error) {
 
         console.error(error);
 
@@ -2264,11 +2295,8 @@ async function downloadPDF() {
             "Draft sudah tersimpan, " +
             "tetapi PDF belum berhasil dibuat."
         );
-
     }
-
 }
-
 
 /* =====================================================
    NAMA FILE
