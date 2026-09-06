@@ -1220,8 +1220,12 @@ function updatePreview() {
                     "td"
                 );
 
-            activityCell.textContent =
+            const activityText =
                 activities[index]?.value || "-";
+
+            activityCell.innerHTML =
+                escapeHTML(activityText)
+                   .replace(/\n/g, "<br>");
 
 
             row.appendChild(noCell);
