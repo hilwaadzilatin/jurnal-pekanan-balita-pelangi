@@ -968,6 +968,48 @@ function addActivity(
    EVENT BARIS
 ===================================================== */
 
+function enableBulletEnter(textarea) {
+    textarea.addEventListener("keydown", function(event) {
+        if (event.key !== "Enter") return;
+
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const value = textarea.value;
+
+        // Ambil baris yang sedang ditulis
+        const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+        const currentLine = value.substring(lineStart, start);
+
+        // Kalau baris diawali "- "
+        if (currentLine.trimStart().startsWith("-")) {
+            event.preventDefault();
+
+            const indent =
+                currentLine.match(/^\s*/)?.[0] || "";
+
+            const bullet = indent + "- ";
+
+            const newValue =
+                value.substring(0, start) +
+                "\n" +
+                bullet +
+                value.substring(end);
+
+            textarea.value = newValue;
+
+            // Posisi cursor setelah "- "
+            const newPosition =
+                start + 1 + bullet.length;
+
+            textarea.selectionStart = newPosition;
+            textarea.selectionEnd = newPosition;
+
+            // Update preview & draft
+            handleFormChange();
+        }
+    });
+}
+
 function attachDraftEvents(row) {
 
     const inputs =
@@ -983,11 +1025,14 @@ function attachDraftEvents(row) {
                 handleFormChange
             );
 
+            if (input.classList.contains("activity-input")) {
+                enableBulletEnter(input);
+            }
+
         }
     );
 
 }
-
 
 /* =====================================================
    HAPUS BARIS
